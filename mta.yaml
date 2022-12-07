@@ -1,0 +1,29 @@
+---
+_schema-version: '3.1'
+ID: SampleBookstore
+version: 1.0.0
+description: "A simple CAP project."
+parameters:
+  enable-parallel-deployments: true
+build-parameters:
+  before-all:
+    - builder: custom
+      commands:
+        - npm install --production
+        - cds build --production
+        - cp -r db/data gen/srv/srv/data
+modules:
+  - name: SampleBookstore-srv
+    type: nodejs
+    path: gen/srv
+    parameters:
+      buildpack: nodejs_buildpack
+      disk-quota: 256M
+      memory: 256M
+    build-parameters:
+      builder: npm-ci
+      ignore: ["node_modules/"]
+    provides:
+      - name: srv-api # required by consumers of CAP services (e.g. approuter)
+        properties:
+          srv-url: ${default-url}     
